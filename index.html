@@ -331,6 +331,41 @@ button{font:inherit;color:inherit;cursor:pointer}
 .pm-hub b{font-family:var(--f-display);font-size:22px}
 .pm-hub .opp{display:none;font-size:11.5px;font-weight:700;color:var(--deep);background:#fff;border-radius:999px;padding:4px 10px;align-self:center}
 .pm.on .pm-hub .opp{display:inline-block;animation:rise .5s ease both}
+.pm{grid-template-columns:minmax(0,1.05fr) 44px minmax(0,.95fr) 44px minmax(0,.85fr)}
+.pm-v{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 13px;display:flex;flex-direction:column;gap:3px;animation:rise .6s ease both;transition:opacity .4s,background .4s,border-color .4s}
+.pm-v h4{margin:0;font-family:var(--f-display);font-size:15px;font-weight:700;color:#3A1C9C;display:flex;align-items:center;gap:8px}
+.pm-v .ck{margin-left:auto;width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;font-size:11px;font-style:normal;display:grid;place-items:center;flex:none}
+.pm-v p{margin:0;font-size:12px;color:var(--faint);line-height:1.35}
+.pm-v .chips,.pm-v .chips span{display:flex;gap:5px;flex-wrap:wrap}
+.pm-v .chips{margin-top:3px}
+.pm-v .chips b{font-size:11px;font-weight:600;background:var(--lav-2);color:var(--purple-deep);border-radius:999px;padding:2px 8px}
+.pm-v.on{background:#F6F4FF;border-color:var(--purple);box-shadow:0 0 0 3px rgba(87,40,222,.10)}
+.pm-v.on .chips b{background:#fff}
+.pm-v.off{opacity:.45}.pm-v.off .ck{background:var(--line)}
+.pm-v .opp{display:none;margin-top:4px;font-size:11px;font-weight:700;color:#fff;background:var(--purple-deep);border-radius:999px;padding:3px 9px;align-self:flex-start;font-style:normal}
+.pm.on .pm-v .opp{display:inline-block;animation:rise .5s ease both}
+.pm-pol{gap:7px;text-align:left;padding:18px 16px}
+.pm-pol .pol-h small{display:block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#B7A6FF}
+.pm-pol .pol-h b{font-size:18px}
+.pm-pol .opt{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:10px;border:1px solid #2E2B48;font-size:11px;color:#9C9CB8;transition:background .4s,border-color .4s}
+.pm-pol .opt i{width:13px;height:13px;border-radius:50%;border:2px solid #6A6A8A;margin-top:2px;flex:none}
+.pm-pol .opt b{display:block;font-family:var(--f-body,inherit);font-size:13px;font-weight:600;color:#fff}
+.pm-pol .opt.sel{background:var(--purple);border-color:var(--purple);color:#E6DEFF}
+.pm-pol .opt.sel i{border-color:#fff;background:radial-gradient(#fff 38%,transparent 44%)}
+.pm-pol .pol-v{font-size:12px;color:#D9D5F2;border-top:1px solid #2E2B48;padding-top:9px;margin-top:2px;text-align:center}
+.pm-pol .opp{align-self:center;text-align:center}
+/* auto-cycle through the three settings (negative delays phase-shift one 7.5s loop) */
+@keyframes optOn{0%,30%{background:var(--purple);border-color:var(--purple);color:#E6DEFF}34%,96%{background:transparent;border-color:#2E2B48;color:#9C9CB8}100%{background:var(--purple);border-color:var(--purple);color:#E6DEFF}}
+@keyframes dotOn{0%,30%{border-color:#fff;background:radial-gradient(#fff 38%,transparent 44%)}34%,96%{border-color:#6A6A8A;background:none}100%{border-color:#fff;background:radial-gradient(#fff 38%,transparent 44%)}}
+.pm.cyc .opt{animation:optOn 7.5s linear infinite}.pm.cyc .opt i{animation:dotOn 7.5s linear infinite}
+.pm.cyc .opt.c1,.pm.cyc .opt.c1 i{animation-delay:-5s}.pm.cyc .opt.c2,.pm.cyc .opt.c2 i{animation-delay:-2.5s}
+@keyframes pvOff{0%,30%{opacity:.45;background:#fff;border-color:var(--line)}34%,96%{opacity:1;background:#F6F4FF;border-color:var(--purple)}100%{opacity:.45;background:#fff;border-color:var(--line)}}
+.pv-cyc{animation:pvOff 7.5s linear infinite!important}
+@keyframes chShow{0%,30%{opacity:1}34%,96%{opacity:0}100%{opacity:1}}
+.pv-cyc .chips{position:relative;height:20px}
+.pv-cyc .chips span{position:absolute;left:0;top:0;opacity:0;animation:chShow 7.5s linear infinite}
+.pv-cyc .ch1{animation-delay:-5s!important}.pv-cyc .ch2{animation-delay:-2.5s!important}
+.pm-v em.opp,.pm-grp em.opp{font-style:normal}
 .pm-close{display:none}
 .pm.on + .pm-close{display:flex}
 .co2{padding:22px 20px;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px}
@@ -454,7 +489,6 @@ button{font:inherit;color:inherit;cursor:pointer}
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 </head>
 <body>
-
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -590,17 +624,28 @@ const PAGES = {
           </div>
         </div>
       </div></div>`,
-  'partners': o => `<div class="pm${o.on?' on':''}">
+  'partners': o => {const L=o.lvl??1, cyc=!!o.cycle;
+    const optc=i=>cyc?' c'+i:(L===i?' sel':'');
+    const person=cyc?`<div class="pm-v pv-cyc"><h4>Verify the Person<i class="ck">✓</i></h4><p>Confirms a real person approved it</p><div class="chips"><span class="ch0"><b>Not required</b></span><span class="ch1"><b>Passkeys</b><b>Stripe Link</b></span><span class="ch2"><b>ID verification partners</b></span></div><em class="opp">Attestation Partners</em></div>`
+      :`<div class="pm-v ${L>0?'on':'off'}"><h4>Verify the Person<i class="ck">${L>0?'✓':'–'}</i></h4><p>Confirms a real person approved it</p><div class="chips">${L===0?'<b>Not required</b>':L===1?'<b>Passkeys</b><b>Stripe Link</b>':'<b>ID verification partners</b>'}</div><em class="opp">Attestation Partners</em></div>`;
+    return `<div class="pm${o.on?' on':''}${cyc?' cyc':''}">
     <div class="pm-col">
-      <div class="pm-grp" style="animation-delay:.1s"><h5>Agent platforms</h5><span>Muse · Meta</span><span>Grok Bot &amp; Others</span><em class="opp">Connector Listings</em></div>
-      <div class="pm-grp" style="animation-delay:.25s"><h5>Verify the person</h5><span>Stripe Link<small>wallet attestation or $0 card check</small></span><span>Passkeys<small>proves it’s the same person</small></span><em class="opp">Attestation Partners</em></div>
+      <div class="pm-v on" style="animation-delay:.1s"><h4>Verify the Agent<i class="ck">✓</i></h4><p>Signed by HUMAN, so we know which agent it is</p><div class="chips"><b>Muse · Meta</b><b>Grok Bot &amp; Others</b></div><em class="opp">Connector Listings</em></div>
+      <div class="pm-v on" style="animation-delay:.2s"><h4>Verify the Intent<i class="ck">✓</i></h4><p>The agent says what it wants; the person confirms in chat</p></div>
+      ${person}
     </div>
-    <div class="pm-wire" aria-hidden="true"><svg viewBox="0 0 56 400" preserveAspectRatio="none"><path d="M0 100 C28 100 28 200 56 200"/><path d="M0 290 C28 290 28 200 56 200"/></svg><b style="top:22%">intent</b><b style="top:74%">proof</b></div>
-    <div class="pm-hub"><svg class="hlogo" role="img" aria-label="HUMAN"><use href="#hl"/></svg><small>Sightline + Agent Door</small><div class="st">Detect · Ask · Consent<br>Verify · Judge</div><b>One verdict</b><span class="opp">Merchants Set the Policy and Keep the Evidence</span></div>
+    <div class="pm-wire" aria-hidden="true"><svg viewBox="0 0 56 400" preserveAspectRatio="none"><path d="M0 200 C28 200 28 200 56 200"/></svg></div>
+    <div class="pm-hub pm-pol"><svg class="hlogo" role="img" aria-label="HUMAN"><use href="#hl"/></svg>
+      <div class="pol-h"><small>Merchant policy</small><b>How Much Proof?</b></div>
+      <div class="opt${optc(0)}"><i></i><span><b>Just Ask Intent</b>Agent and intent only</span></div>
+      <div class="opt${optc(1)}"><i></i><span><b>Quick Check</b>One-tap passkey or Stripe Link</span></div>
+      <div class="opt${optc(2)}"><i></i><span><b>Full ID Check</b>High-value or regulated purchases</span></div>
+      <div class="pol-v">One verdict: Allow · Ask · Block</div>
+      <span class="opp">Merchants Set the Policy and Keep the Evidence</span></div>
     <div class="pm-wire" aria-hidden="true"><svg viewBox="0 0 56 400" preserveAspectRatio="none"><path d="M0 200 C28 200 28 200 56 200"/></svg><b style="top:44%">verdict</b></div>
     <div class="pm-col">
       <div class="pm-grp" style="animation-delay:.45s"><h5>In the partner's protocol</h5><span>Merchant session</span><span>Visa Trusted Agent Protocol</span><span>Mastercard Agent Pay</span><span>Google AP2</span><span>Fraud and risk tools</span><em class="opp">Network &amp; Protocol Partners</em></div>
-    </div></div>`,
+    </div></div>`;},
   'door-intro': o => `<div class="di"><div class="door-card">${H}<h3>Let’s make sure we understand each other</h3><p>This site wants to know who is acting and why before it continues.</p><div class="door-st"><span class="spin"></span>Asking the agent what it’s here to do</div><div class="by">HUMAN Agent Door</div></div>
     <div class="di-steps"><div class="di-step" style="animation-delay:.2s"><i>1</i><span><b>Ask</b>The agent says who it works for and what it wants to do.</span></div>
     <div class="di-step" style="animation-delay:.45s"><i>2</i><span><b>Verify</b>The person behind it approves with a tap: passkey or Stripe Link.</span></div>
@@ -760,10 +805,12 @@ const CH = [
   ]},
 { id:'opportunity', label:'The Opportunity', take:'Every Integration Is a Partnership, and We Don’t Have to Pick a Protocol to Win.', wide:true,
   steps:[
-  {eyebrow:'The opportunity', title:'Partners Verify. HUMAN Decides.', body:'Our verdict goes out in whatever protocol each partner uses.',
-   focus:'browser', browser:{url:'HUMAN · the partner in the middle', page:'partners'}},
+  {eyebrow:'The opportunity', title:'Partners Verify. HUMAN Decides.', body:'Partners verify the agent, its intent and the person. HUMAN makes the call.',
+   focus:'browser', browser:{url:'HUMAN · the partner in the middle', page:'partners', lvl:1}},
+  {eyebrow:'The opportunity', title:'Each Merchant Chooses How Much Proof It Needs.', body:'Just the intent, a one-tap check, or a full ID check on high-value purchases.',
+   focus:'browser', browser:{url:'HUMAN · the partner in the middle', page:'partners', cycle:true}},
   {eyebrow:'The opportunity', title:'Protocols Decide How an Agent Transacts. HUMAN Decides Whether It Should.', body:'',
-   focus:'browser', browser:{url:'HUMAN · the partner in the middle', page:'partners', on:true}},
+   focus:'browser', browser:{url:'HUMAN · the partner in the middle', page:'partners', lvl:1, on:true}},
   ]},
 ];
 
